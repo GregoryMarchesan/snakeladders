@@ -1,4 +1,4 @@
-# Code created by Grégory Marchesan
+# Code created by Grégory Marchesan to perform the Snake Ladders game
 
 import numpy as np
 import random
@@ -38,20 +38,33 @@ class Player:
     self.ladder = 0                  # overall ladders count
 
   def set_start_position(self, position):
+    """ Sets the start position to the player """
+
     self.position = position
+
   def move(self, newPos):
+    """ Moves the player to the new position """
+
     self.position = newPos
+
   def win(self):
+    """ Counts the number of wins for the player"""
     self.wins = self.wins + 1
+
   def set_snake_immunity(self, number_immunity):
+    """ Set the immunity for snakes for the player. The default is 0"""
     self.snakes_immunity = number_immunity
+
   def set_avoid_ladder_prob(self, prob):
+    """ Set the probability of the player avoid ladders. The Default is 0"""
+
     self.avoid_ladder_prob = prob
 
-    
-# collects statistics of each game    
 class GameStatistics:
+  """ Collects statistics of each game """
+
   def __init__(self):
+    """ Resets players and statistics """
     self.winner = 0               # winner (1 or 2)
     self.rolls = 0                # rolls/rounds of game
     self.snakes_usage = 0         # number of snakes usage
@@ -59,22 +72,28 @@ class GameStatistics:
     self.player1 = Player()       # players
     self.player2 = Player()       #
     
-  # update statistics after each game  
   def update_statistics(self, winner, rolls, snakes_usage, ladder_usage, player1, player2):
+    """ Update statistics after each game """
     self.winner = winner
     self.rolls = rolls
     self.snakes_usage = snakes_usage
     self.ladder_usage = ladder_usage
     self.player1 = player1
     self.player2 = player2
-    
-# collects statistics of all simulated games (10,000)    
+     
 class OverallStatistics(GameStatistics):
+    """ Collects statistics of all simulated games """
+
     def __init__(self):
-      super().__init__()    # same attributes of game statistics (but winner) applied to all games
+      """ Same attributes of game statistics (but winner) applied to all games """
+      super().__init__()
       
-    # accumulates statistics  
     def update_statistics(self, game_statistics):
+      """Accumulates statistics  for all games
+      
+      Parameters:
+      game_statistics (GameStatistics): The statistics for each game to be summarized in this object
+      """
       self.rolls = self.rolls + game_statistics.rolls 
       self.snakes_usage = self.snakes_usage + game_statistics.snakes_usage
       self.ladder_usage = self.ladder_usage + game_statistics.ladder_usage
@@ -85,14 +104,15 @@ class OverallStatistics(GameStatistics):
       self.player1.ladder = game_statistics.player1.ladder + self.player1.ladder
       self.player2.ladder = game_statistics.player2.ladder + self.player2.ladder
       
-    # print overall statistics
     def toString(self):
+      """Print overall statistics"""
       print("\nTotal number of rolls: %s\nPlayer 1 wins: %s\nPlayer 2 wins: %s\nTotal number of snakes used: %s\nTotal number of ladders used: %s\n" % (self.rolls, self.player1.wins, self.player2.wins, self.snakes_usage, self.ladder_usage))
 
-      
-# the Snake Laddders original game
 class SnakeLadders:
+  """The Snake Laddders original game, using Player and GameStatistics class"""
+
   def __init__(self):
+    """ Initializes players, round and statistics"""
     self.player1 = Player()          # players
     self.player2 = Player()          # 
     self.currentPlayerTurn = 1       # turns
@@ -100,8 +120,8 @@ class SnakeLadders:
     random.seed(datetime.now())          # seed to die roll
     self.statistics = GameStatistics()   # game statistics
     
-  # restart an created game
   def restart(self):
+    """ Restart an created game"""
     self.player1 = Player()
     self.player2 = Player()
     self.currentPlayerTurn = 1
@@ -109,8 +129,11 @@ class SnakeLadders:
     random.seed(datetime.now())
     self.statistics = GameStatistics()
     
-  # plays the game - walk until the end
   def play(self):
+    """ Plays the game - walk until the end
+    
+    Used to collect statistics about the game
+    """
     while(self.walk() == 0):           # continues to play
       
       # change turn
@@ -124,12 +147,15 @@ class SnakeLadders:
     winner = self.currentPlayerTurn    # find the winner
     
     # update statistics
-    self.statistics.update_statistics(winner, self.round, self.player1.snakes + self.player2.snakes, self.player1.ladder + self.player2.ladder, self.player1, self.player2)
+    self.statistics.update_statistics(winner, self.round, 
+                                      self.player1.snakes + self.player2.snakes, 
+                                      self.player1.ladder + self.player2.ladder, 
+                                      self.player1, self.player2)
     return self.statistics
     
-  # walk through the game applying snakes and ladders
   def walk(self):
-    
+    """ Walk through the game applying snakes and ladders"""
+
     # instance to player
     if (self.currentPlayerTurn == 1):
       currentPlayer = self.player1
@@ -182,27 +208,27 @@ class SnakeLadders:
     currentPlayer.move(next_position) # move player
     return 0 # continues to play
     
-# simulation of the game
 class Simulate_game:
+  """ Simulation of the game"""
+
   def __init__(self):
+    """ Initializes the game simulation reseting the statistics"""
     self.overallStatistics = OverallStatistics()
   
   def simulate(self, game, times): # plays all the "times"
+    """ Simulate the game, running the 'times' passed argument'
+
+    Parameters:
+    game (SnakeLadders): The game reference
+    times (int): The number of simulations to be performed
+
+    Returns:
+    OverallStatistics: All statistics collected using the simulation as an object
+    """
     for _ in range(0, times):
       stat = game.play()   # plays
       game.restart()       # starts a new game
       self.overallStatistics.update_statistics(stat) # update statistics
-    return self.overallStatistics  
-   
-    
-SIMULATION_TIMES = 10000
-
-game = SnakeLadders()
-simulate = Simulate_game()
-stats_Q1 = simulate.simulate(game, SIMULATION_TIMES)
-
-print("Question 1: The probability to player 1 wins is %.2f %%\n" % (stats_Q1.player1.wins/SIMULATION_TIMES*100))
-print("Question 2: In average, %.2f snakes are landed on in each game\n" % (stats_Q1.snakes_usage/SIMULATION_TIMES))
-print("Average number of rounds: %.2f\n" % (stats_Q1.rolls/SIMULATION_TIMES))
+    return self.overallStatistics
 
 
