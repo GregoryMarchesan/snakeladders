@@ -22,11 +22,11 @@ The code contains some basic features for the snakes and ladders game. There are
 
 A simple example to run different simulations of the game is depicted below:
 
-'''
+```
 game = SnakeLadders()
 simulate = Simulate_game()
 stats_Q1 = simulate.simulate(game, SIMULATION_TIMES)
-'''
+```
 where the stats_Q1 will get all statistic results for all the number of times to simulate specified in SIMULATION_TIMES. Additionally, if you want to make this the backend of any frontend game of snake and ladders, you can use the 'walk' method from 'SnakeLadders' class which will move each player consistently to the appropriete place.
 
 ## Instalation
